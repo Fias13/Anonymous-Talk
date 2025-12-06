@@ -650,7 +650,7 @@ logoutBtn?.addEventListener("click", () => {
   
   showAlert("ออกจากระบบแล้ว");
   profileMenu?.classList.remove("show");
-  window.location.href = "login.html";
+  window.location.href = "index.html";
 });
 
 /* ---------- โหลดรูปโปรไฟล์เริ่มต้น ---------- */
