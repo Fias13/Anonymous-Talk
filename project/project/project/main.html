@@ -1,0 +1,377 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ANONYMOUS TALK</title>
+  <link rel="stylesheet" href="main.css" />
+</head>
+<body>
+  <!-- Avatar กลางหน้า -->
+        <div class="avatar-panel">
+          <div class="avatar-card">
+            <div class="avatar-preview">
+              <!-- ชั้นพื้นหลัง -->
+              <img
+                id="avatar-main-skin"
+                class="avatar-layer"
+                src="./assets/avatar/dino.png"
+                alt=""
+              />
+              <!-- ชั้นหน้า -->
+              <img
+                id="avatar-main-face"
+                class="avatar-layer"
+                src="./assets/avatar/empty.png"
+                alt=""
+              />
+              <!-- ชั้นหมวก -->
+              <img
+                id="avatar-main-hat"
+                class="avatar-layer"
+                src="./assets/avatar/empty.png"
+                alt=""
+              />
+              <!-- ชั้นอื่น ๆ -->
+              <img
+                id="avatar-main-other"
+                class="avatar-layer"
+                src="./assets/avatar/empty.png"
+                alt=""
+              />
+            </div>
+          </div>
+        </div>
+  <!-- ⭐ ครอบทั้งหน้าไว้สำหรับ scale -->
+  <div id="page-scale-wrapper">
+    <div class="container">
+      <!-- Header -->
+      <header class="header">
+        <!-- 🔹 ปุ่ม Burger -->
+        <button class="burger-btn" id="burgerBtn" aria-label="Main menu">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+        
+        <h1 class="title">ANONYMOUS TALK</h1>
+      </header>
+
+      <!-- มุมขวาบน -->
+      <div class="top-right">
+        <!-- Coin -->
+        <button class="icon-btn coin" id="coinBtn" title="Coins">
+          <span class="coin-icon" aria-hidden="true"></span>
+          <span class="coin-count" id="coinCount">0</span>
+        </button>
+
+        <!-- Notifications -->
+      <div class="notif-wrap">
+        <button class="icon-btn bell" id="bellBtn" title="Notifications" aria-haspopup="true" aria-expanded="false">
+          <span class="bell-icon" aria-hidden="true"></span>
+          <span class="badge" id="notifBadge" hidden>3</span>
+        </button>
+
+        <!-- Notification dropdown -->
+        <div class="notif-dropdown" id="notifDropdown" role="dialog" aria-hidden="true" aria-label="Notifications">
+          <div class="notif-header">
+            <strong>Notifications</strong>
+            <button class="notif-clear" id="notifClear">Mark all read</button>
+          </div>
+
+          <div class="notif-list" id="notifList">
+            <div class="notif-empty" id="notifEmpty">ไม่มีการแจ้งเตือน</div>
+          </div>
+
+          <div class="notif-footer">
+            <button id="notifViewAll" class="notif-viewall">Delete all</button>
+          </div>
+        </div>
+      </div>
+
+        <!-- Profile -->
+        <div class="profile-wrap" id="profileWrap">
+          <button class="avatar-btn" id="avatarBtn" title="Account">
+            <img src="./assets/images/default-profile.png" alt="Profile" class="avatar-img" />
+            <span class="status-dot online"></span>
+            <span class="avatar-ring"></span>
+          </button>
+
+          <!-- Dropdown Menu -->
+          <div class="menu" id="profileMenu" role="menu">
+            <div class="menu-header">
+              <img class="menu-avatar" src="./assets/images/default-profile.png" alt="" />
+              <div class="menu-identity">
+                <div class="menu-name" id="menuName">Naomi</div>
+                <div class="menu-mail" id="menuMail">naomi@example.com</div>
+              </div>
+            </div>
+
+            <!-- 🔽 ส่วนเลือกสถานะใต้ชื่อ -->
+            <div class="status-block">
+              <!-- แถวแสดงสถานะปัจจุบัน -->
+              <button class="status-row" id="statusRow" type="button">
+                <span class="status-dot online" id="statusDotMenu"></span>
+                <span class="status-text" id="statusText">ออนไลน์</span>
+              </button>
+
+              <!-- 🔻 dropdown ที่จะกางลงมา -->
+              <div class="status-list" id="statusList">
+                <button class="status-option" data-status="online">
+                  <span class="status-dot-mini online"></span>
+                  <div class="status-option-text">
+                    <div class="status-option-label">ออนไลน์</div>
+                    <div class="status-option-desc">คุณกำลังใช้งานอยู่</div>
+                  </div>
+                </button>
+
+                <button class="status-option" data-status="away">
+                  <span class="status-dot-mini away"></span>
+                  <div class="status-option-text">
+                    <div class="status-option-label">ไม่อยู่</div>
+                    <div class="status-option-desc">พักชั่วคราว</div>
+                  </div>
+                </button>
+
+                <button class="status-option" data-status="busy">
+                  <span class="status-dot-mini busy"></span>
+                  <div class="status-option-text">
+                    <div class="status-option-label">ห้ามรบกวน</div>
+                    <div class="status-option-desc">ไม่ต้องการรับการแจ้งเตือน</div>
+                  </div>
+                </button>
+
+                <button class="status-option" data-status="offline">
+                  <span class="status-dot-mini offline"></span>
+                  <div class="status-option-text">
+                    <div class="status-option-label">ออฟไลน์ / ซ่อนตัว</div>
+                    <div class="status-option-desc">แสดงว่าออฟไลน์อยู่</div>
+                  </div>
+                </button>
+              </div>
+            </div>
+
+            <hr />
+            <button class="menu-item" id="menuProfile" role="menuitem">My Profile</button>
+            <button class="menu-item" id="menuSettings" role="menuitem">Settings</button>
+
+            <!-- ===== Settings Modal ===== -->
+            <div id="settingsModal" class="modal" aria-hidden="true" role="dialog" aria-modal="true">
+              <div class="modal-backdrop" id="settingsBackdrop"></div>
+
+              <div class="modal-card settings-card" role="document">
+                <button class="modal-close" id="settingsClose" aria-label="Close">×</button>
+                <h2 class="modal-title">My Profile</h2>
+
+                <div class="settings-content">
+                  <div class="settings-section">
+                    <h3 class="settings-label">รูปโปรไฟล์</h3>
+                    <div class="settings-avatar-row">
+                      <img
+                        id="settingsAvatarPreview"
+                        class="settings-avatar"
+                        src="./assets/images/default-profile.png"
+                        alt="Profile preview"
+                      />
+                      <div class="settings-avatar-actions">
+                        <button type="button" class="settings-btn" id="settingsAvatarUpload">
+                          เลือกรูป…
+                        </button>
+                        <button type="button" class="settings-btn ghost" id="settingsAvatarReset">
+                          ใช้รูปเริ่มต้น
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="settings-footer">
+                  <button type="button" class="settings-btn primary" id="settingsSave">
+                    Save
+                  </button>
+                </div>
+              </div>
+            </div>
+            <!-- ===== /Settings Modal ===== -->
+
+            <hr />
+            <button class="menu-item danger" id="logoutBtn" role="menuitem">Logout</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mobile burger menu -->
+      <nav class="burger-menu" id="burgerMenu">
+        <button class="burger-item" id="burgerCustom">แต่งตัว</button>
+        <button class="burger-item" id="burgerShop">ช้อปปิ้ง</button>
+        <button class="burger-item" id="burgerDaily">Daily Rewards</button>
+      </nav>
+
+      <!-- Content -->
+      <div class="content">
+        <!-- Left side -->
+        <section class="left-panel">
+          <p class="greeting">
+            สวัสดี...
+            <input
+              type="text"
+              placeholder="ใส่ชื่อที่คุณต้องการ"
+              id="usernameInput"
+              class="username-input"
+            />
+          </p>
+
+          <!-- ปุ่มแต่งตัว -->
+          <button class="costom-btn-icon" id="costomBtn" title="Custom"></button>
+
+          <!-- Customize Modal -->
+          <div id="customModal" class="custom-modal" aria-hidden="true">
+            <div id="customBackdrop" class="custom-backdrop"></div>
+
+            <div class="custom-dialog">
+              <button id="customClose" class="custom-close" aria-label="Close">✕</button>
+
+              <div class="custom-layout">
+                <!-- ซ้าย: กรอบ Avatar ใหญ่สุด -->
+                <div class="custom-avatar-col">
+                  <h3 class="custom-title">แต่งตัวของคุณ</h3>
+
+                  <div class="avatar-preview custom-avatar-preview">
+                    <!-- ⭐ รูป avatar หลักในป๊อปอัป -->
+                    <img id="avatar-custom-skin"  class="avatar-layer" src="./assets/avatar/dino.png" alt="">
+                    <img id="avatar-custom-face"  class="avatar-layer" src="./assets/avatar/empty.png"     alt="">
+                    <img id="avatar-custom-hat"   class="avatar-layer" src="./assets/avatar/empty.png"     alt="">
+                    <img id="avatar-custom-other" class="avatar-layer" src="./assets/avatar/empty.png"     alt="">
+                  </div>
+
+                  <p class="custom-hint">แตะไอเท็มเพื่อดูตัวอย่าง จากนั้นกด Save เพื่อใส่จริง</p>
+                </div>
+
+                <!-- ขวา: Tabs + ไอเท็ม -->
+                <div class="custom-items-col">
+                  <div id="customTabs" class="custom-tabs">
+                    <button class="custom-tab active" data-cat="skin">สกิน</button>
+                    <button class="custom-tab"        data-cat="hat">หมวก</button>
+                    <button class="custom-tab"        data-cat="face">ใบหน้า</button>
+                    <button class="custom-tab"        data-cat="other">อื่น ๆ</button>
+                  </div>
+
+                  <div id="customGrid" class="custom-grid">
+                    <!-- JS จะใส่ .custom-item ให้ -->
+                  </div>
+                </div>
+              </div>
+
+              <!-- ⭐ ปุ่ม Save ด้านล่างขวา -->
+              <div class="custom-footer">
+                <button id="customSave" class="custom-save-btn">Save</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- ปุ่มช้อป -->
+          <button class="shop-btn-icon" id="shopBtn" title="Shop"></button>
+
+          <!-- Shopping Modal -->
+          <div id="shopModal" class="modal" aria-hidden="true" role="dialog" aria-modal="true">
+            <div class="modal-backdrop" id="shopBackdrop"></div>
+
+            <div class="modal-card shop-card" role="document">
+              <button class="modal-close" id="shopClose" aria-label="Close">×</button>
+              <h2 class="modal-title">ช้อปปิ้ง</h2>
+
+              <!-- Tabs -->
+              <div class="shop-tabs" id="shopTabs" role="tablist" aria-label="หมวดสินค้า">
+                <button class="shop-tab active" data-cat="skin"   role="tab" aria-selected="true">สกิน</button>
+                <button class="shop-tab"        data-cat="hat"    role="tab">หมวก</button>
+                <button class="shop-tab"        data-cat="face"   role="tab">หน้า</button>
+                <button class="shop-tab"        data-cat="other"  role="tab">อื่นๆ</button>
+              </div>
+
+              <!-- Items grid -->
+              <div class="shop-grid" id="shopGrid" aria-live="polite"></div>
+
+              <!-- CTA -->
+              <button class="shop-claim" id="shopClaim">Claim</button>
+            </div>
+          </div>
+
+          <!-- ปุ่ม Daily -->
+          <button class="daily-btn-icon" id="dailyBtn" title="Daily"></button>
+
+          <!-- Daily Rewards Modal -->
+          <div id="dailyModal" class="modal" aria-hidden="true" role="dialog" aria-modal="true">
+            <div class="modal-backdrop" id="dailyBackdrop"></div>
+
+            <div class="modal-card daily-card" role="document">
+              <button class="modal-close" id="dailyClose" aria-label="Close">×</button>
+
+              <h2 class="modal-title">Daily Rewards</h2>
+
+              <div class="daily-grid" id="dailyGrid" aria-live="polite">
+                <!-- ถูกเติมโดย JS -->
+              </div>
+
+              <button class="daily-claim" id="dailyClaim">รับรางวัลวันนี้</button>
+            </div>
+          </div>
+        </section>
+
+        
+
+        <!-- Right side -->
+        <section class="right-panel">
+          <div class="friends-card">
+            <!-- หัวการ์ด -->
+            <div class="friends-header">
+              <div class="friends-title">
+                <div class="friends-title-main">Friends</div>
+                <div class="friends-title-sub">รายชื่อเพื่อน</div>
+              </div>
+
+              <!-- ใช้ class .online-count เดิม ให้ JS อัปเดตได้ -->
+              <div class="online-count">
+                <span class="online-dot"></span>
+                <span class="online-count-text">73 Users are Online</span>
+              </div>
+            </div>
+
+            <!-- แถวปุ่มแท็บ -->
+            <div class="friends-tabs-row">
+              <div class="tab-buttons">
+                <button class="btn active"   id="tabNew">หาเพื่อนใหม่</button>
+                <button class="btn inactive" id="tabOffline">เพื่อน</button>
+              </div>
+            </div>
+
+            <!-- รายชื่อเพื่อน -->
+            <ul class="user-list" id="userList">
+              <!-- จะถูก render ด้วย JS -->
+            </ul>
+
+            <!-- ข้อความกรณีไม่มีเพื่อน (JS จะ render ทับถ้ามีข้อมูล) -->
+            <div>
+            </div>
+          </div>
+
+          <!-- ปุ่ม Join อยู่ใต้การ์ด -->
+          <button class="join-btn-icon" id="joinBtn" title="Join"></button>
+        </section>
+      </div>
+
+     
+
+  <!-- ===================================================== -->
+  <!--    CUSTOM POPUP ALERT (แทน alert() เดิมทั้งหมด)       -->
+  <!-- ===================================================== -->
+  <div class="custom-alert" id="customAlert">
+    <div class="custom-alert-box">
+      <p id="customAlertMessage"></p>
+      <button class="custom-alert-btn" id="customAlertBtn">โอเค</button>
+    </div>
+  </div>
+
+  <!-- App JS -->
+  <script src="main.js"></script>
+</body>
+</html>

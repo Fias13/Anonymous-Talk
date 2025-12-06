@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chat Room</title>
+  <link rel="stylesheet" href="chatpage.css">
+</head>
+<body>
+  <header>
+    <div class="header-left">
+      <a href="main.html" class="home-btn">
+        <img src="./assets/images/hicon.png" alt="Home">
+      </a>
+    </div>
+
+    <h1>CHAT ROOM</h1>
+
+    <div class="header-right">
+      <button class="icon-btn right" id="create-room-btn">Create Room</button>
+    </div>
+  </header>
+
+  <main id="room-container">
+    <div class="no-room">💤 ยังไม่มีห้องแชทในขณะนี้</div>
+  </main>
+
+  <!-- Modal ตั้งค่าห้อง -->
+  <div id="room-modal" class="modal">
+    <div class="modal-content">
+      <h2>Create Room</h2>
+      <input type="text" id="room-name" placeholder="ชื่อห้อง...">
+      <input type="text" id="room-interest" placeholder="ความชื่นชอบ เช่น เกม, หนัง, ดนตรี">
+      <select id="room-type">
+        <option value="public">Public</option>
+        <option value="private">Private</option>
+      </select>
+      <!-- รหัสผ่านห้อง (แสดงเฉพาะเมื่อเลือก Private) -->
+      <div class="field" id="password-wrapper" style="display: none; margin-top: 8px;">
+        <label for="room-password">รหัสผ่านห้อง (สำหรับห้อง Private)</label>
+        <input type="password" id="room-password" maxlength="32" />
+      </div>
+      <label>จำนวนสมาชิก:</label>
+      <input type="number" id="room-limit" min="2" max="10" value="3">
+      <div class="modal-buttons">
+        <button id="confirm-create">Create</button>
+        <button id="cancel-create">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal แจ้งเตือน -->
+  <div id="alert-modal" class="modal">
+    <div class="modal-content">
+      <span id="alert-message"></span>
+      <div class="modal-buttons">
+        <button id="alert-close">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- เปลี่ยนเป็น type="module" เพื่อใช้ Firebase -->
+  <script type="module" src="chatpage.js"></script>
+</body>
+</html>

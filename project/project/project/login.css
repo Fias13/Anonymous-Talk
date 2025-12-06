@@ -1,0 +1,501 @@
+/* AnonymousTalk.css */
+
+/* ---------- Base ---------- */
+/* เพิ่มที่ body */
+body {
+  margin: 0;
+  font-family: 'Comic Sans MS', 'Arial Rounded MT Bold', sans-serif;
+  background-color: #ECE4D4;
+  position: relative;
+  overflow: hidden;  /* ⭐ เพิ่ม */
+  height: 100vh;     /* ⭐ เพิ่ม */
+}
+
+/* ทำพื้นหลังเป็น layer แยก เพื่อให้ภาพจางเหมือนใน mockup */
+body::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 110%;
+  background: url("./assets/images/backgroud.png") no-repeat center bottom;
+  background-size: cover;
+  opacity: 0.5;            /* ความจางของภาพ */
+  z-index: -1;             /* ส่งไปอยู่ข้างหลัง content */
+  pointer-events: none;
+}
+
+.container {
+  min-height: 100vh;       /* ให้ container สูงเต็มหน้าจอ */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between; /* ดัน footer ลงไปข้างล่าง */
+  align-items: center;
+  padding: 20px;
+}
+
+/* ---------- Header ---------- */
+.header {
+  position: relative;
+  width: 100%;
+  max-width: 2000px;
+  margin-bottom: 30px;
+  text-align: center;
+  z-index: 1; /* กันไม่ให้โดน layer อื่นทับ */
+  padding-top: 20px;
+}
+
+/* แก้ไขส่วนนี้ใน login.css */
+/* เอา will-change และ transform-origin กลับมา */
+.title {
+  font-size: 2.5rem;
+  font-weight: bold;
+  transition: all 0.3s ease;
+  cursor: default;
+  will-change: transform;  /* ⭐ เพิ่ม */
+  backface-visibility: hidden;  /* ⭐ เพิ่ม */
+  margin-top: 20px;
+}
+
+.title:hover {
+  color: #000;
+  transform: scale(1.1) translateZ(0);  /* ⭐ เพิ่ม translateZ(0) */
+  text-shadow: 2px 2px 10px rgba(255,255,255,0.8);
+  transform-origin: center center;  /* ⭐ เพิ่ม */
+}
+
+.login-btn-icon {
+  position: absolute;
+  right: 0;
+  top: 50%;  /* ⭐ เปลี่ยนจาก 50% */
+  transform: translateY(-50%);
+  width: 260px;
+  height: 120px;
+  background: url("./assets/images/login.png") no-repeat center center;
+  background-size: contain;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.3s ease, filter 0.3s ease;
+}
+
+.login-btn-icon:hover {
+  transform: translateY(-50%) scale(1.1);
+  filter: brightness(1.2);
+}
+
+/* ---------- Layout Content ---------- */
+/* แก้ไข content layout ให้เหมือน main.html */
+.content {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;  /* ⭐ เปลี่ยนจาก center */
+  width: 100%;
+  max-width: 1200px;
+  margin-top: 30px;  /* ⭐ ลด margin-top ลงเหมือน main */
+}
+
+.left-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  width: 22%;  /* ⭐ เปลี่ยนจาก 25% */
+  margin-top: -50px;
+  
+  
+}
+
+.right-panel {
+  width: 25%;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  position: relative;  /* ⭐ เพิ่ม */
+  top: -100px;        /* ⭐ เพิ่มให้เลื่อนขึ้นเหมือน main */
+}
+
+/* ปรับ container */
+.container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+}
+
+.greeting {
+  font-size: 1.2rem;
+}
+
+.username-input {
+  margin-left: 10px;
+  border: none;
+  border-bottom: 1px solid black;
+  background: transparent;
+  outline: none;
+  font-size: 1rem;
+}
+
+.costom-btn-icon {
+  width: 120px;
+  height: 60px;
+  background: url("./assets/images/costom.png") no-repeat center center;
+  background-size: contain;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.3s ease, filter 0.3s ease;
+}
+
+.costom-btn-icon:hover {
+  transform: scale(1.1);
+  filter: brightness(1.2);
+}
+
+.shop-btn-icon {
+  width: 120px;
+  height: 60px;
+  background: url("./assets/images/shop.png") no-repeat center center;
+  background-size: contain;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.3s ease, filter 0.3s ease;
+}
+
+.shop-btn-icon:hover {
+  transform: scale(1.1);
+  filter: brightness(1.2);
+}
+
+.daily-btn-icon {
+  width: 120px;
+  height: 60px;
+  background: url("./assets/images/daily.png") no-repeat center center;
+  background-size: contain;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.3s ease, filter 0.3s ease;
+}
+
+.daily-btn-icon:hover {
+  transform: scale(1.1);
+  filter: brightness(1.2);
+}
+
+.btn.white {
+  background-color: #fff;
+}
+
+/* ===== Friends list ===== */
+.right-panel{
+  width:25%;
+  display:flex;
+  flex-direction:column;
+  align-items:stretch;
+}
+.friends-card{
+  margin-top: 6px;
+  padding: 14px 14px 12px;
+  border-radius: 24px;
+  border: 3px solid #1a1a1a;
+  background: #fdf8ec;
+  box-shadow: 0 10px 30px rgba(0,0,0,.18);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.friends-header{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+.friends-title-main{
+  font-size: 1rem;
+  font-weight: 900;
+}
+.friends-title-sub{
+  font-size: .8rem;
+  color:#555;
+}
+.online-count{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:4px 10px;
+  border-radius: 999px;
+  border: 2px solid #1a1a1a;
+  background:#fff;
+  font-size:.8rem;
+  font-weight:700;
+  box-shadow: 0 3px 0 #00000020;
+}
+.online-dot{
+  width:10px;
+  height:10px;
+  border-radius:999px;
+  background:#2ecc71;
+}
+.friends-tabs-row{
+  margin-top: 4px;
+  margin-bottom: 4px;
+}
+.tab-buttons{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  padding:4px;
+  border-radius: 999px;
+  border: 2px solid #1a1a1a;
+  background:#e4ddce;
+  box-shadow: 0 3px 0 #00000020;
+}
+.tab-buttons .btn{
+  flex:1;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background: transparent;
+  font-size:.85rem;
+}
+.tab-buttons .btn.active{
+  background:#ffffff;
+  color:#000;
+  border-color:#1a1a1a;
+}
+.tab-buttons .btn.inactive{ opacity:.55; }
+
+.user-list{
+  margin-top:6px;
+  padding: 6px 4px;
+  border-radius:16px;
+  border: 2px dashed #1a1a1a;
+  background:#fffdf6;
+  height: 260px;
+  overflow-y: auto;
+  list-style:none;
+}
+.user-item{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding: 6px 8px;
+  margin: 2px 0;
+  border-radius: 12px;
+  transition: background .15s ease, transform .08s ease;
+}
+.user-item:hover{
+  background: rgba(0,0,0,.04);
+  transform: translateY(-1px);
+}
+.user-left{ display:flex; align-items:center; }
+.user-list-empty{
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 2px dashed #1a1a1a;
+  background:#fff;
+  font-size:.85rem;
+  color:#666;
+  text-align:center;
+}
+.user-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  object-fit: cover;
+  background-color: #f2f2f2;
+  border: 2px solid #eee;
+  box-shadow: 0 2px 6px rgba(0,0,0,.08);
+}
+.user-info {
+  flex: 1;
+  margin-left: 10px;
+  display: flex;
+  flex-direction: column;
+}
+.user-name {
+  font-weight: 700;
+  font-size: .95rem;
+  color: #222;
+}
+.user-status {
+  font-size: .8rem;
+  color: #999;
+}
+.user-status.online { color: #27ae60; }
+.user-status.away { color: #f1c40f; }
+.user-status.offline { color: #aaa; }
+.user-action {
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 1.1rem;
+  border-radius: 8px;
+  padding: 4px 8px;
+  transition: background .2s ease, transform .1s ease;
+}
+.user-action:hover {
+  background: rgba(0,0,0,.08);
+  transform: scale(1.1);
+}
+.user-action.chat { color: #2980b9; }
+.user-action.add { color: #27ae60; }
+.user-action.disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+.join-btn-icon{
+  width:120px; 
+  height:110px;
+  background:url("./assets/images/join.png") no-repeat center/contain;
+  border:none; 
+  cursor:pointer; 
+  margin-top:15px;
+  align-self:flex-start; 
+  margin-left:90px;
+  transition: transform 0.3s ease, filter 0.3s ease;
+}
+
+.join-btn-icon:hover {
+  transform: scale(1.1);
+  filter: brightness(1.2);
+}
+
+/* ---------- Footer ---------- */
+.footer {
+  text-align: center;
+  font-size: 0.9rem;
+  margin-top: auto;  /* ดันลงล่างอัตโนมัติ */
+  padding: 15px 0;
+  width: 100%;
+}
+
+.social-icons {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-top: 8px;
+  font-size: 1.3rem;
+}
+
+/* ---------- Login Modal (เพิ่มใหม่) ---------- */
+.modal {
+  position: fixed;
+  inset: 0;
+  display: none;
+  z-index: 999;                 /* ให้ลอยเหนือทุกอย่าง */
+}
+.modal.open { display: block; }
+
+.modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  backdrop-filter: blur(2px);
+}
+
+.modal-card {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: min(580px, 92vw);
+  background: #fff;
+  border-radius: 22px;
+  padding: 28px 28px 32px;
+  box-shadow: 0 18px 60px rgba(0,0,0,0.35);
+  border: 3px solid #1a1a1a;   /* เส้นหนาแนวสเก็ตช์ */
+}
+
+.modal-close {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  cursor: pointer;
+  font-size: 28px;
+  line-height: 38px;
+  transition: 0.2s;
+}
+.modal-close:hover { background: #eee; }
+
+.modal-title {
+  text-align: center;
+  font-size: 28px;
+  margin: 10px 0 20px;
+  letter-spacing: 1px;
+}
+
+.provider-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+/* ปุ่ม Google (GIS) ให้กึ่งกลาง */
+.g_id_signin { margin: 6px auto; }
+
+/* Facebook button (เดโม UI; ใช้งานจริงต่อ SDK เอง) */
+.fb-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 320px;
+  height: 48px;
+  border: 1px solid #3b5998;
+  background: #1877f2;
+  color: #fff;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.fb-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(24,119,242,0.35);
+}
+.fb-logo {
+  display: inline-block;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #fff;
+  position: relative;
+}
+.fb-logo::after {
+  content: "f";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-48%, -58%);
+  font-family: Arial, sans-serif;
+  font-weight: 900;
+  color: #1877f2;
+}
+
+/* ---------- Responsive (แนะนำ) ---------- */
+@media (max-width: 1024px) {
+  .content { gap: 24px; }
+  .left-panel, .right-panel { width: 32%; }
+}
+@media (max-width: 768px) {
+  .content {
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+  }
+  .left-panel, .right-panel { width: 100%; }
+  .login-btn-icon { right: 12px; width: 220px; height: 100px; }
+  .join-btn-icon { margin-left: 20px; }
+}
