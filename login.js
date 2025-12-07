@@ -51,33 +51,30 @@ function updateOnlineCount() {
 }
 
 // สถานะแท็บปัจจุบัน
-let currentTab = "new"; // "new" = หาเพื่อนใหม่, "friends" = เพื่อน (ไม่ออนไลน์)
+let currentTab = "friends";
 
 const DEFAULT_AVATAR = "./assets/images/default-profile.png";
 
 /* ===== เปลี่ยนแท็บ ===== */
-function setActiveTab(tab) {
-  currentTab = tab;
+function setActiveTabFriends() {
+  currentTab = "friends";
 
-  if (!tabNew || !tabOffline) return;
-
-  if (tab === "new") {
-    tabNew.classList.add("active");
-    tabNew.classList.remove("inactive");
-
-    tabOffline.classList.remove("active");
-    tabOffline.classList.add("inactive");
-  } else {
+  // มีเฉพาะปุ่มเพื่อน
+  if (tabOffline) {
     tabOffline.classList.add("active");
     tabOffline.classList.remove("inactive");
+  }
 
+  // ถ้ามี tabNew อยู่ (เช่นจากหน้าอื่น) ให้ทำเป็น inactive เฉย ๆ
+  if (tabNew) {
     tabNew.classList.remove("active");
     tabNew.classList.add("inactive");
   }
 
   renderUsers();
-  updateOnlineCount(); // ⭐ อัปเดตจำนวนเพื่อนออนไลน์ตามแท็บ
+  updateOnlineCount();
 }
+
 
 
 function renderUsers() {
@@ -109,19 +106,9 @@ function renderUsers() {
       status === "away"    ? "Away"    :
       status === "offline" ? "Offline" : status;
 
-    let rightPartHtml = "";
+    // หน้า login แสดงชื่อเฉย ๆ ไม่ให้ลบ/กดอะไร
+    const rightPartHtml = "";
 
-    if (currentTab === "new") {
-      // Add-friend feature removed — no add button shown
-      rightPartHtml = ``;
-    } else {
-      // แท็บเพื่อน = ปุ่มลบ
-      rightPartHtml = `
-        <div class="user-actions">
-          <button class="user-action remove" title="ลบเพื่อน">✕</button>
-        </div>
-      `;
-    }
 
     li.innerHTML = `
       <div class="user-left">
@@ -202,25 +189,14 @@ function renderUsers() {
 }
 
 /* ===== ผูก event กับปุ่มแท็บ ===== */
-tabNew?.addEventListener("click", () => setActiveTab("new"));
-tabOffline?.addEventListener("click", () => setActiveTab("friends"));
+// หน้า login มีเฉพาะแท็บเพื่อน
+tabOffline?.addEventListener("click", setActiveTabFriends);
 
-// ⭐ เริ่มต้นที่แท็บ หาเพื่อนใหม่ + อัปเดตจำนวนคนออนไลน์
-setActiveTab("new");
-updateOnlineCount();
+// เริ่มต้นที่แท็บเพื่อน
+setActiveTabFriends();
 
-// ----- ปุ่มกดทั่วไป (เดโม) -----
-document.getElementById("costomBtn").onclick = () => alert("Costom click");
-document.getElementById("shopBtn").onclick   = () => alert("Shop click");
-document.getElementById("dailyBtn").onclick  = () => alert("Daily click");
 
-// พิมพ์ชื่อแล้วกด Enter
-usernameInput.addEventListener("keydown", (e) => {
-  if (e.key === "Enter") {
-    const name = usernameInput.value.trim();
-    if (name) alert("สวัสดี " + name + "!");
-  }
-});
+
 
 // ----- Modal open/close -----
 function openModal() {
@@ -240,17 +216,11 @@ document.addEventListener("keydown", (e) => {
   if (e.key === "Escape" && modal.classList.contains("open")) closeModal();
 });
 
-// ----- Join ปกติ (พิมพ์ชื่อเอง) -----
+// ----- Join บนหน้าแรก: ให้ทำหน้าที่เหมือนปุ่ม Login เปิด popup เท่านั้น -----
 joinBtn.addEventListener("click", () => {
-  const nameInput = usernameInput.value.trim();
-  if (!nameInput) {
-    alert("กรุณาใส่ชื่อก่อนเข้าสู่ระบบ");
-    return;
-  }
-  localStorage.setItem("username", nameInput);
-  localStorage.setItem("chatUsername", nameInput);
-  window.location.href = "main.html";
+  openModal(); // ใช้ flow login เดียวกับปุ่ม login บนหัวเว็บ
 });
+
 
 // ================= Google Identity Services =================
 const GOOGLE_CLIENT_ID =

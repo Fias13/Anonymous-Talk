@@ -995,7 +995,7 @@ body {
 </div>
  
 <div class="chat-sidebar">
-  <h2>💬 Chat 💬</h2>
+  <h2> Chat </h2>
   <button class="settings-btn" id="settingsBtn" title="Settings">⚙️</button>
   <div class="online-users" id="onlineUsers">ผู้ใช้ออนไลน์: 0</div>
   <div class="chat-messages" id="chatMessages"></div>
@@ -1062,14 +1062,12 @@ body {
     <!-- หน้าเลือกเกม -->
     <div class="minigame-grid" id="minigameGrid">
       <div class="game-card" data-game="game1">
-        <img src="./assets/images/game1.png" alt="Game 1" class="game-image">
-        <div class="game-name">🎯 เกมที่ 1</div>
+        <div class="game-name">💣 เกมที่ 1</div>
         <div class="game-description">Minesweeper เคลียร์ระเบิดให้หมด!</div>
       </div>
       <div class="game-card" data-game="game2">
-        <img src="./assets/images/game2.png" alt="Game 2" class="game-image">
-        <div class="game-name">🎲 เกมที่ 2</div>
-        <div class="game-description">คำอธิบายเกมที่ 2</div>
+        <div class="game-name">🐍 เกมที่ 2</div>
+        <div class="game-description">Snake Game เกมงูกินหาง</div>
       </div>
     </div>
 
@@ -1745,24 +1743,23 @@ if (addFriendBtn) {
     }
   }
  
-  function updateCharacters(count) {
+function updateCharacters(count) {
   characterContainer.innerHTML = '';
-  const current = Math.min(count, maxPlayers);
   const chairs = document.querySelectorAll("#chairs img");
-  
-  // AVATAR ASSET INDEX
+
+  // ==== index ของรูปอวตาร์ (เหมือน main) ====
   const SHOP_ITEMS = {
     skin: [
-      { id: "skin-none", img: "./assets/avatar/empty.png" },
-      { id: "skin-base", img: "./assets/avatar/dino.png" },
+      { id: "skin-none",   img: "./assets/avatar/empty.png" },
+      { id: "skin-base",   img: "./assets/avatar/dino.png" },
       { id: "skin-classic", avatarImg: "./assets/avatar/skin1.png", fullBody: true },
-      { id: "skin-night", avatarImg: "./assets/avatar/skin2.png", fullBody: true },
-      { id: "skin-pastel", avatarImg: "./assets/avatar/skin3.png", fullBody: true }
+      { id: "skin-night",   avatarImg: "./assets/avatar/skin2.png", fullBody: true },
+      { id: "skin-pastel",  avatarImg: "./assets/avatar/skin3.png", fullBody: true }
     ],
     hat: [
       { id: "hat-none", img: "./assets/avatar/empty.png" },
-      { id: "hat-top", avatarImg: "./assets/avatar/avatar_hat1.png", fullBody: true },
-      { id: "hat-cap", avatarImg: "./assets/avatar/avatar_hat2.png", fullBody: true },
+      { id: "hat-top",   avatarImg: "./assets/avatar/avatar_hat1.png", fullBody: true },
+      { id: "hat-cap",   avatarImg: "./assets/avatar/avatar_hat2.png", fullBody: true },
       { id: "hat-beret", avatarImg: "./assets/avatar/avatar_hat3.png", fullBody: true }
     ],
     face: [
@@ -1771,10 +1768,10 @@ if (addFriendBtn) {
       { id: "face-mask", img: "./assets/shop/face_mask.png" }
     ],
     other: [
-      { id: "other-none", img: "./assets/avatar/empty.png" },
-      { id: "other-water", avatarImg: "./assets/avatar/avatar_gun.png", fullBody: true },
-      { id: "other-bag", avatarImg: "./assets/avatar/avatar_burger.png", fullBody: true },
-      { id: "other-flag", avatarImg: "./assets/avatar/avatar_burger.png", fullBody: true }
+      { id: "other-none",  img: "./assets/avatar/empty.png" },
+      { id: "other-water", avatarImg: "./assets/avatar/avatar_gun.png",    fullBody: true },
+      { id: "other-bag",   avatarImg: "./assets/avatar/avatar_burger.png", fullBody: true },
+      { id: "other-flag",  avatarImg: "./assets/avatar/avatar_burger.png", fullBody: true }
     ]
   };
 
@@ -1789,22 +1786,39 @@ if (addFriendBtn) {
     });
   });
 
-  function getAvatarImage() {
-    const hatAsset = equipped.hat ? AVATAR_ASSET_INDEX[equipped.hat] : null;
-    const useHatAsFullBody = hatAsset?.fullBody;
+  // แปลง avatar_equipped -> รูป
+  function getAvatarImageFor(eq) {
+    const fallback = "./assets/avatar/dino.png";
+    if (!eq) return fallback;
 
-    if (useHatAsFullBody) {
-      return hatAsset.img || "./assets/avatar/dino.png";
+    const hatAsset  = eq.hat  ? AVATAR_ASSET_INDEX[eq.hat]  : null;
+    const skinAsset = eq.skin ? AVATAR_ASSET_INDEX[eq.skin] : null;
+
+    // ถ้าหมวกเป็น full body ใช้หมวก
+    if (hatAsset?.fullBody) {
+      return hatAsset.img || fallback;
     }
-
-    const skinAsset = equipped.skin ? AVATAR_ASSET_INDEX[equipped.skin] : null;
-    return skinAsset?.img || "./assets/avatar/dino.png";
+    // ถ้า skin เป็น full body ใช้ skin
+    if (skinAsset?.fullBody) {
+      return skinAsset.img || fallback;
+    }
+    // ปกติใช้รูป skin
+    return skinAsset?.img || fallback;
   }
 
+  // เอาผู้ใช้ในห้องจาก roomUsersData มาทำเป็นลิสต์
+  const entries = Object.entries(roomUsersData || {})
+    .sort((a, b) => (a[1].joinTime || 0) - (b[1].joinTime || 0)); // เรียงตามเวลาที่เข้าห้อง
+
+  const current = Math.min(entries.length, maxPlayers, chairs.length);
+
   for (let i = 0; i < current; i++) {
+    const [uid, userData] = entries[i];
+    const userAvatar = userData?.avatar || null;
+
     const rect = chairs[i].getBoundingClientRect();
     const dino = document.createElement("img");
-    dino.src = getAvatarImage();
+    dino.src = getAvatarImageFor(userAvatar || equipped); // ถ้าเพื่อนไม่มี avatar ใช้ของเราเป็น fallback
     dino.className = "dino";
     dino.style.left = `${rect.left + rect.width / 2}px`;
     dino.style.top  = `${rect.top + rect.height / 2}px`;
@@ -1813,7 +1827,7 @@ if (addFriendBtn) {
     characterContainer.appendChild(dino);
   }
 }
- 
+
   document.getElementById("backBtn").addEventListener("click", async () => {
     if (countdownTimer) clearInterval(countdownTimer);
     try {

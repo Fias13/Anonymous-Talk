@@ -142,7 +142,7 @@ function showAlert(message) {
 
 
 // สถานะแท็บปัจจุบัน
-let currentTab = "new"; // "new" = หาเพื่อนใหม่, "friends" = เพื่อน (ไม่ออนไลน์)
+let currentTab = "friends"; // "friends" = เพื่อน (ไม่ออนไลน์)
 
 const DEFAULT_AVATAR = "./assets/images/default-profile.png";
 
@@ -150,25 +150,31 @@ const DEFAULT_AVATAR = "./assets/images/default-profile.png";
 function setActiveTab(tab) {
   currentTab = tab;
 
-  if (!tabNew || !tabOffline) return;
+  // ตอนนี้ใช้แค่ปุ่ม "เพื่อน"
+  if (!tabOffline) return;
 
-  if (tab === "new") {
+  if (tab === "new" && tabNew) {
+    // ถ้าหน้าไหนยังมีปุ่มหาเพื่อนใหม่อยู่
     tabNew.classList.add("active");
     tabNew.classList.remove("inactive");
 
     tabOffline.classList.remove("active");
     tabOffline.classList.add("inactive");
   } else {
+    // โหมดเพื่อน
     tabOffline.classList.add("active");
     tabOffline.classList.remove("inactive");
 
-    tabNew.classList.remove("active");
-    tabNew.classList.add("inactive");
+    if (tabNew) {
+      tabNew.classList.remove("active");
+      tabNew.classList.add("inactive");
+    }
   }
 
   renderUsers();
-  updateOnlineCount(); // ⭐ อัปเดตจำนวนเพื่อนออนไลน์ตามแท็บ
+  updateOnlineCount();
 }
+
 
 
 function renderUsers() {
@@ -297,8 +303,7 @@ tabNew?.addEventListener("click", () => setActiveTab("new"));
 tabOffline?.addEventListener("click", () => setActiveTab("friends"));
 
 // ⭐ เริ่มต้นที่แท็บ หาเพื่อนใหม่ + อัปเดตจำนวนคนออนไลน์
-setActiveTab("new");
-updateOnlineCount();
+setActiveTab("friends");
 
 /* ---------- Greeting: กด Enter ทักชื่อ ---------- */
 
@@ -625,33 +630,43 @@ document.addEventListener("keydown", (e) => {
 });
 
 // Logout - แก้ไขให้เก็บข้อมูลเหรียญและไอเทมไว้
+// Logout - เก็บเหรียญ / ไอเท็ม / ชุดที่ใส่ไว้ ไม่ให้หาย
 logoutBtn?.addEventListener("click", () => {
-  // ✅ เก็บข้อมูลสำคัญก่อน logout
-  const coinsBackup = localStorage.getItem("coins");
-  const inventoryBackup = localStorage.getItem("inventory");
-  const equippedBackup = localStorage.getItem("avatar_equipped");
-  const profileAvatarBackup = localStorage.getItem("profileAvatar");
-  const dailyStateBackup = localStorage.getItem("daily_seq_state");
-  const friendsBackup = localStorage.getItem("friends");
-  const notificationsBackup = localStorage.getItem("notifications");
-  
-  // ลบข้อมูลผู้ใช้
+  // ✅ backup key ที่ต้องการเก็บไว้ตลอด
+  const backupKeys = [
+    "coins",            // เหรียญ
+    "inventory",        // ไอเท็มที่ซื้อแล้ว
+    "avatar_equipped",  // ชุดที่ใส่อยู่
+    "profileAvatar",    // รูปโปรไฟล์
+    "daily_seq_state",  // สถานะ daily reward
+    "friends",          // รายชื่อเพื่อน
+    "notifications"     // แจ้งเตือน
+  ];
+
+  const backup = {};
+  backupKeys.forEach((k) => {
+    backup[k] = localStorage.getItem(k);
+  });
+
+  // ❌ ห้ามใช้ localStorage.clear()
+  // ลบเฉพาะข้อมูล user/session ที่เกี่ยวกับการ login
   localStorage.removeItem("user");
+  localStorage.removeItem("username");
+  localStorage.removeItem("chatUsername");
   sessionStorage.clear();
-  
-  // ✅ คืนข้อมูลที่ต้องเก็บ
-  if (coinsBackup) localStorage.setItem("coins", coinsBackup);
-  if (inventoryBackup) localStorage.setItem("inventory", inventoryBackup);
-  if (equippedBackup) localStorage.setItem("avatar_equipped", equippedBackup);
-  if (profileAvatarBackup) localStorage.setItem("profileAvatar", profileAvatarBackup);
-  if (dailyStateBackup) localStorage.setItem("daily_seq_state", dailyStateBackup);
-  if (friendsBackup) localStorage.setItem("friends", friendsBackup);
-  if (notificationsBackup) localStorage.setItem("notifications", notificationsBackup);
-  
+
+  // ✅ เอาข้อมูลที่สำคัญใส่กลับเข้าไป
+  backupKeys.forEach((k) => {
+    if (backup[k] !== null) {
+      localStorage.setItem(k, backup[k]);
+    }
+  });
+
   showAlert("ออกจากระบบแล้ว");
   profileMenu?.classList.remove("show");
   window.location.href = "index.html";
 });
+
 
 /* ---------- โหลดรูปโปรไฟล์เริ่มต้น ---------- */
 
@@ -927,6 +942,13 @@ const SHOP_ITEMS = {
     }
   ],
   face: [
+    {
+    id: "face-none",
+    name: "ไม่ใส่ใบหน้า",
+    price: 0,
+    img: "./assets/avatar/empty.png",
+    hideInShop: true        // ไม่ต้องไปโชว์ในร้าน
+    },
     { id: "face-cool", 
       name: "Cool Face", 
       price: 0, 
@@ -1094,7 +1116,9 @@ function renderCustomGrid(cat) {
   const owned = inv[cat] || [];
   const extraAlwaysOwned = {
     hat: ["hat-none"],
-    skin: ["skin-base"]
+    skin: ["skin-base"],
+    face: ["face-none"],
+    other: ["other-none"]
   };
   const availableIds = new Set([...(extraAlwaysOwned[cat] || []), ...owned]);
 
@@ -1105,9 +1129,19 @@ function renderCustomGrid(cat) {
     return;
   }
 
+  const NONE_IDS = {
+    hat: "hat-none",
+    face: "face-none",
+    other: "other-none"
+  };
+
   customGrid.innerHTML = items.map(it => {
     const current = equipped[cat];
-    const isSelected = it.id === "hat-none" ? !current : current === it.id;
+    const noneId = NONE_IDS[cat];
+    const isSelected = (noneId && it.id === noneId)
+      ? !current          // ถ้าไม่มีอะไรใส่อยู่ → การ์ด "ไม่ใส่..." แสดงป้าย ใส่อยู่
+      : current === it.id;
+
     return `
       <div class="custom-item ${isSelected ? "equipped" : ""}" data-id="${it.id}">
         <img class="custom-thumb" src="${it.img}" />
@@ -1120,13 +1154,23 @@ function renderCustomGrid(cat) {
   customGrid.querySelectorAll(".custom-item").forEach(card => {
     card.addEventListener("click", () => {
       const id = card.dataset.id;
-      equipped[cat] = (id === "hat-none") ? null : id;
+      const NONE_IDS = {
+        hat: "hat-none",
+        face: "face-none",
+        other: "other-none"
+      };
+      const noneId = NONE_IDS[cat];
+
+      // ถ้ากดการ์ด "ไม่ใส่..." → เซ็ตเป็น null
+      equipped[cat] = (noneId && id === noneId) ? null : id;
+
       saveEquipped();
       renderCustomGrid(cat);
       renderAvatar();
     });
   });
 }
+
 
 customSave?.addEventListener("click", () => {
   showAlert("บันทึกชุดตัวละครเรียบร้อยแล้ว ✨");
