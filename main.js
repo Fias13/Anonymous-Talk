@@ -796,6 +796,25 @@ function applyStatus(statusKey) {
   if (statusTextEl) statusTextEl.textContent = cfg.label;
 
   localStorage.setItem("userStatus", cfg.key);
+  publishMyStatus(cfg.key); //
+}
+
+async function publishMyStatus(statusKey) {
+  try {
+    if (!firebaseDb || !myUserId) return;
+    const dbMod = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js');
+
+    const meRef = dbMod.ref(firebaseDb, `profiles/${myUserId}`);
+    await dbMod.update(meRef, {
+      name: myName || localStorage.getItem("username") || "Unknown",
+      status: statusKey,
+      updatedAt: Date.now()
+    });
+
+    dbMod.onDisconnect(meRef).update({ status: "offline", updatedAt: Date.now() });
+  } catch (e) {
+    console.warn("publishMyStatus failed:", e);
+  }
 }
 
 const savedStatus = localStorage.getItem("userStatus") || "online";
@@ -1736,8 +1755,8 @@ function renderNotifications() {
         
         try {
           const myFriends = getFriends();
-          if (!myFriends.some(f => f.name === fromName)) {
-            myFriends.push({ name: fromName, status: 'online' });
+          if (!myFriends.some(f => f.id === fromId || f.name === fromName)) {
+            myFriends.push({ id: fromId, name: fromName, status: 'online' });
             saveFriends(myFriends);
             console.log('✅ Added friend on accepter side:', fromName);
           }
@@ -1758,6 +1777,7 @@ function renderNotifications() {
               unread: true,
               addToFriends: true,
               friendData: {
+                id: myUserId,
                 name: myName,
                 status: 'online'
               }
@@ -2029,3 +2049,49 @@ function getFriends() {
 function saveFriends(friends) {
   localStorage.setItem("friends", JSON.stringify(friends));
 }
+let friendStatusUnsubs = {};
+
+async function startFriendStatusListeners() {
+  if (!firebaseDb) return;
+
+  // เคลียร์ listener เก่าก่อน
+  Object.values(friendStatusUnsubs).forEach(unsub => { try { unsub(); } catch {} });
+  friendStatusUnsubs = {};
+
+  const friendsList = getFriends();
+  if (!friendsList.length) return;
+
+  const dbMod = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js');
+
+  friendsList.forEach((f) => {
+    const fid = f.id; // ✅ ต้องมี id
+
+    if (!fid) return;
+
+    const refProfile = dbMod.ref(firebaseDb, `profiles/${fid}`);
+
+    const unsub = dbMod.onValue(refProfile, (snap) => {
+      const data = snap.val();
+      if (!data) return;
+
+      const list = getFriends();
+      const idx = list.findIndex(x => x.id === fid);
+      if (idx === -1) return;
+
+      list[idx] = { ...list[idx], status: data.status || "offline" };
+      saveFriends(list);
+
+      // อัปเดต UI
+      friends = list;      // ✅ sync ตัวแปร friends บนสุดของไฟล์ด้วย
+      renderUsers();
+      updateOnlineCount();
+    });
+
+    friendStatusUnsubs[fid] = unsub;
+  });
+}
+// หลัง firebaseDb พร้อม
+startFriendStatusListeners();
+
+// และ publish สถานะตัวเองครั้งแรกตามค่าที่เซฟไว้
+publishMyStatus(localStorage.getItem("userStatus") || "online");

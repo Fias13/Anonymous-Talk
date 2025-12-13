@@ -17,6 +17,26 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const database = getDatabase(app);
  
+
+// DOM refs หลัก
+const userListEl    = document.getElementById("userList");
+const usernameInput = document.getElementById("usernameInput");
+const tabNew        = document.getElementById("tabNew");
+const tabOffline    = document.getElementById("tabOffline");
+const joinBtn       = document.getElementById("joinBtn");
+const onlineCountEl = document.querySelector(".online-count");
+
+// Top-right
+const coinBtn     = document.getElementById("coinBtn");
+const coinCountEl = document.getElementById("coinCount");
+const bellBtn     = document.getElementById("bellBtn");
+const notifBadge  = document.getElementById("notifBadge");
+// Notification dropdown element refs (HTML added if missing)
+const notifDropdown = document.getElementById("notifDropdown");
+const notifListEl   = document.getElementById("notifList");
+const notifClearBtn = document.getElementById("notifClear");
+const notifViewAll  = document.getElementById("notifViewAll");
+
 // DOM Elements
 const createBtn   = document.getElementById('create-room-btn');
 const container   = document.getElementById('room-container');
@@ -33,7 +53,27 @@ const roomPasswordInput = document.getElementById('room-password');
 const alertModal   = document.getElementById('alert-modal');
 const alertMessage = document.getElementById('alert-message');
 const alertClose   = document.getElementById('alert-close');
- 
+
+// Settings (โปรไฟล์)
+const settingsModal         = document.getElementById("settingsModal");
+const settingsBackdrop      = document.getElementById("settingsBackdrop");
+const settingsClose         = document.getElementById("settingsClose");
+const settingsAvatarPreview = document.getElementById("settingsAvatarPreview");
+const settingsAvatarUpload  = document.getElementById("settingsAvatarUpload");
+const settingsAvatarReset   = document.getElementById("settingsAvatarReset");
+const settingsSave          = document.getElementById("settingsSave");
+
+
+// Profile
+const avatarBtn       = document.getElementById("avatarBtn");
+const profileMenu     = document.getElementById("profileMenu");
+const logoutBtn       = document.getElementById("logoutBtn");
+const menuProfileBtn  = document.getElementById("menuProfile"); // ⭐ ใช้ปุ่ม My Profile แทน
+const menuSettingsBtn = document.getElementById("menuSettings"); // จะยังอยู่แต่ไม่ใช้เปิดรูป
+const menuNameEl      = document.getElementById("menuName");
+const menuMailEl      = document.getElementById("menuMail");
+
+
 function showAlert(message, type = 'info') {
   alertMessage.textContent = message;
   alertModal.classList.add(type);
@@ -492,4 +532,578 @@ function showPasswordDialog() {
 // โหลดห้องตอนเริ่มต้น
 window.addEventListener('DOMContentLoaded', () => {
   loadRooms();
+});
+
+// ====== Coin helpers: เก็บเหรียญลง localStorage ======
+function getCoins() {
+  // อ่านจาก DOM ก่อน ถ้าไม่มีค่อยอ่านจาก localStorage
+  const fromText = parseInt(coinCountEl?.textContent || "0", 10);
+  if (!Number.isNaN(fromText)) return fromText;
+
+  const fromStorage = parseInt(localStorage.getItem("coins") || "0", 10);
+  return Number.isNaN(fromStorage) ? 0 : fromStorage;
+}
+
+function setCoins(value) {
+  const safe = Math.max(0, parseInt(value || 0, 10) || 0);
+  if (coinCountEl) coinCountEl.textContent = safe;
+  localStorage.setItem("coins", String(safe));
+}
+
+// โหลดเหรียญตอนเปิดหน้าเว็บ
+(function initCoins() {
+  const saved = parseInt(localStorage.getItem("coins") || "0", 10);
+  const initial = Number.isNaN(saved) ? 0 : saved;
+  if (coinCountEl) coinCountEl.textContent = initial;
+})();
+
+// ปุ่มเหรียญ: ตอนนี้กดแล้ว "ไม่เพิ่มเหรียญ"
+coinBtn?.addEventListener("click", () => {
+  // ตั้งใจให้ไม่ทำอะไร
+});
+
+// -- Notifications implementation (dropdown)
+let notifications = [];
+
+// identify current user (ensure userId exists so we can use it for Firebase paths)
+const myUserId = localStorage.getItem("userId") || (() => {
+  const id = 'user_' + Date.now() + '_' + Math.random().toString(36).slice(2,9);
+  localStorage.setItem("userId", id);
+  return id;
+})();
+
+const myName = localStorage.getItem("chatUsername") || localStorage.getItem("username") || "ผู้ใช้ไม่ระบุชื่อ";
+
+// firebase runtime variables (initialized asynchronously)
+let firebaseDb = null;
+let firebaseApp = null;
+let firebaseNotifRef = null; // ref to `users/{myUserId}/notifications`
+
+// Initialize Firebase (dynamic import so main.js can stay a normal script)
+async function initFirebaseNotifications() {
+  try {
+    // dynamic import firebase modules
+    const appMod = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js');
+    const dbMod  = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js');
+
+    firebaseApp = appMod.initializeApp(firebaseConfig);
+    firebaseDb  = dbMod.getDatabase(firebaseApp);
+
+    // listen to notifications for this user under /notifications/{userId}
+    firebaseNotifRef = dbMod.ref(firebaseDb, `notifications/${myUserId}`);
+
+    // on new notification in per-user path
+    dbMod.onChildAdded(firebaseNotifRef, (snap) => {
+      const data = snap.val();
+      if (!data) return;
+      data._key = snap.key;
+      data._source = 'notifications';
+
+      // ignore duplicates
+      if (!notifications.some(n => n._key === data._key)) {
+        console.log(`🆕 New notification received:`, data);
+        
+        // ⭐ ถ้าเป็น friend_accepted และมี addToFriends flag -> เพิ่มเพื่อนอัตโนมัติ
+        if (data.type === 'friend_accepted' && data.addToFriends && data.friendData) {
+          const friends = getFriends();
+          if (!friends.some(f => f.name === data.friendData.name)) {
+            friends.push(data.friendData);
+            saveFriends(friends);
+            renderUsers();
+            updateOnlineCount();
+            console.log('✅ Auto-added friend from accepted request:', data.friendData.name);
+          }
+        }
+        
+        // push to top
+        notifications.unshift(data);
+        renderNotifications();
+        updateNotifBadge();
+        saveNotifications();
+      }
+    });
+
+    // (no global fallback listening needed — writing now goes to /notifications/{userId})
+
+    // on changed (status changes) update local copy
+    dbMod.onChildChanged(firebaseNotifRef, (snap) => {
+      const data = snap.val();
+      if (!data) return;
+      data._key = snap.key;
+      const idx = notifications.findIndex(n => n._key === data._key);
+      if (idx !== -1) {
+        notifications[idx] = data;
+        renderNotifications();
+        updateNotifBadge();
+      }
+    });
+
+    // on removed
+    dbMod.onChildRemoved(firebaseNotifRef, (snap) => {
+      const key = snap.key;
+      notifications = notifications.filter(n => n._key !== key);
+      renderNotifications();
+      updateNotifBadge();
+    });
+
+    // initial load from Firebase path (also triggers child_added in many hosts)
+    // but keep local storage fallback already present
+  } catch (err) {
+    console.warn('Firebase notifications not initialized:', err);
+  }
+}
+
+// start Firebase notifications in background
+initFirebaseNotifications();
+
+function loadNotifications() {
+  try {
+    notifications = JSON.parse(localStorage.getItem("notifications") || "null") || [];
+  } catch {
+    notifications = [];
+  }
+
+  // ⭐ ใส่เฉพาะ Welcome notification ถ้ายังไม่มี
+  if (notifications.length === 0) {
+    notifications = [
+      { 
+        id: 1, 
+        title: "Welcome!", 
+        text: "Thanks for trying ANONYMOUS TALK", 
+        unread: false  // ไม่มี badge
+      }
+    ];
+    localStorage.setItem("notifications", JSON.stringify(notifications));
+  }
+}
+
+function saveNotifications() {
+  localStorage.setItem("notifications", JSON.stringify(notifications));
+}
+
+function updateNotifBadge() {
+  if (!notifBadge) return;
+  const unread = notifications.filter(n => n.unread).length;
+  if (unread > 0) {
+    notifBadge.textContent = String(unread);
+    notifBadge.hidden = false;
+  } else {
+    notifBadge.hidden = true;
+  }
+}
+
+function renderNotifications() {
+  if (!notifListEl) return;
+  notifListEl.innerHTML = "";
+
+  if (!notifications || notifications.length === 0) {
+    const empty = document.createElement("div");
+    empty.className = "notif-empty";
+    empty.textContent = "ไม่มีการแจ้งเตือน";
+    notifListEl.appendChild(empty);
+    return;
+  }
+
+  notifications.forEach(n => {
+    const el = document.createElement("div");
+    // unread property might be boolean OR status === 'pending' for firebase friend_request
+    const isUnread = n.unread || (n.status && n.status === 'pending');
+    el.className = `notif-item ${isUnread ? 'unread' : ''}`.trim();
+
+    // Render all notification types as generic items (friend_request actions removed)
+    el.innerHTML = `
+      <div class="notif-avatar" aria-hidden="true"></div>
+      <div class="notif-body">
+        <div class="notif-title">${escapeHtml(n.title || n.type || 'Notification')}</div>
+        <div class="notif-text">${escapeHtml(n.text || n.message || '')}</div>
+        <div class="notif-meta">${escapeHtml(n.time || n.createdAt ? (n.time || new Date(n.createdAt).toLocaleString()) : '')}</div>
+      </div>
+    `;
+
+    el.addEventListener("click", () => {
+        // generic click will mark as read if possible
+        if (n._key && firebaseDb) {
+          (async () => {
+            try {
+              const dbMod = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js');
+              await dbMod.update(dbMod.ref(firebaseDb, `notifications/${myUserId}/${n._key}`), { status: 'read' });
+            } catch(err) { /* ignore */ }
+          })();
+        }
+
+        // local fallback
+        n.unread = false;
+        saveNotifications();
+        renderNotifications();
+        updateNotifBadge();
+        showAlert(`${n.title || n.type} — ${n.text || n.message || ''}`);
+      });
+
+    notifListEl.appendChild(el);
+  });
+}
+
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+// load/render
+loadNotifications();
+updateNotifBadge();
+renderNotifications();
+
+// Toggle dropdown
+bellBtn?.addEventListener("click", (e) => {
+  e?.stopPropagation();
+  if (!notifDropdown || !bellBtn) return;
+
+  const opening = !notifDropdown.classList.contains("show");
+  // Close other menus (profile) to avoid overlap
+  profileMenu?.classList.remove("show");
+
+  if (opening) {
+    notifDropdown.classList.add("show");
+    notifDropdown.setAttribute("aria-hidden", "false");
+    bellBtn.setAttribute("aria-expanded", "true");
+    // hide the counter badge when opened (behaviour like before)
+    if (notifBadge) notifBadge.hidden = true;
+  } else {
+    notifDropdown.classList.remove("show");
+    notifDropdown.setAttribute("aria-hidden", "true");
+    bellBtn.setAttribute("aria-expanded", "false");
+  }
+});
+
+notifClearBtn?.addEventListener("click", () => {
+  notifications.forEach(n => (n.unread = false));
+  saveNotifications();
+  renderNotifications();
+  updateNotifBadge();
+});
+
+notifViewAll?.addEventListener("click", () => {
+  if (confirm("ต้องการลบการแจ้งเตือนทั้งหมดหรือไม่?")) {
+    clearAllNotifications();
+  }
+});
+
+function clearAllNotifications() {
+  // เก็บเฉพาะ Welcome notification
+  const welcomeNotif = notifications.find(n => n.title === "Welcome!");
+  
+  if (welcomeNotif) {
+    notifications = [welcomeNotif];
+  } else {
+    notifications = [];
+  }
+  
+  // ลบใน Firebase ด้วย (ยกเว้น Welcome)
+  if (firebaseDb && firebaseNotifRef) {
+    (async () => {
+      try {
+        const dbMod = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js');
+        const snapshot = await dbMod.get(firebaseNotifRef);
+        
+        if (snapshot.exists()) {
+          const allNotifs = snapshot.val();
+          
+          for (const key in allNotifs) {
+            const notif = allNotifs[key];
+            // ลบทุกอันที่ไม่ใช่ Welcome
+            if (notif.title !== "Welcome!") {
+              await dbMod.remove(dbMod.ref(firebaseDb, `notifications/${myUserId}/${key}`));
+            }
+          }
+        }
+      } catch (err) {
+        console.error('Error clearing Firebase notifications:', err);
+      }
+    })();
+  }
+  
+  saveNotifications();
+  renderNotifications();
+  updateNotifBadge();
+  
+  showAlert("ลบการแจ้งเตือนทั้งหมดแล้ว");
+}
+
+/* ---------- Profile dropdown ---------- */
+
+function openProfileMenu(e) {
+  e?.stopPropagation();
+  if (!profileMenu) return;
+  profileMenu.classList.toggle("show");
+}
+
+avatarBtn?.addEventListener("click", openProfileMenu);
+
+document.addEventListener("click", (e) => {
+  if (profileMenu?.classList.contains("show") && !e.target.closest(".profile-wrap")) {
+    profileMenu.classList.remove("show");
+  }
+});
+
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") {
+    if (profileMenu?.classList.contains("show")) profileMenu.classList.remove("show");
+    if (notifDropdown?.classList.contains("show")) {
+      notifDropdown.classList.remove("show");
+      bellBtn?.setAttribute("aria-expanded", "false");
+    }
+  }
+});
+
+// Logout - แก้ไขให้เก็บข้อมูลเหรียญและไอเทมไว้
+// Logout - เก็บเหรียญ / ไอเท็ม / ชุดที่ใส่ไว้ ไม่ให้หาย
+logoutBtn?.addEventListener("click", () => {
+  // ✅ backup key ที่ต้องการเก็บไว้ตลอด
+  const backupKeys = [
+    "coins",            // เหรียญ
+    "inventory",        // ไอเท็มที่ซื้อแล้ว
+    "avatar_equipped",  // ชุดที่ใส่อยู่
+    "profileAvatar",    // รูปโปรไฟล์
+    "daily_seq_state",  // สถานะ daily reward
+    "friends",          // รายชื่อเพื่อน
+    "notifications"     // แจ้งเตือน
+  ];
+
+  const backup = {};
+  backupKeys.forEach((k) => {
+    backup[k] = localStorage.getItem(k);
+  });
+
+  // ❌ ห้ามใช้ localStorage.clear()
+  // ลบเฉพาะข้อมูล user/session ที่เกี่ยวกับการ login
+  localStorage.removeItem("user");
+  localStorage.removeItem("username");
+  localStorage.removeItem("chatUsername");
+  sessionStorage.clear();
+
+  // ✅ เอาข้อมูลที่สำคัญใส่กลับเข้าไป
+  backupKeys.forEach((k) => {
+    if (backup[k] !== null) {
+      localStorage.setItem(k, backup[k]);
+    }
+  });
+
+  showAlert("ออกจากระบบแล้ว");
+  profileMenu?.classList.remove("show");
+  window.location.href = "index.html";
+});
+
+
+/* ---------- โหลดรูปโปรไฟล์เริ่มต้น ---------- */
+
+(() => {
+  const savedAvatar = localStorage.getItem("profileAvatar");
+  const targets = document.querySelectorAll(".avatar-img, .menu-avatar");
+  if (savedAvatar) {
+    targets.forEach(img => (img.src = savedAvatar));
+  } else {
+    targets.forEach(img => (img.src = DEFAULT_AVATAR));
+  }
+})();
+
+/* ---------- Settings Modal (เปลี่ยนรูปโปรไฟล์) ---------- */
+
+let pendingAvatarData = null;
+
+function openSettingsModal() {
+  if (!settingsModal) return;
+
+  const currentAvatar = localStorage.getItem("profileAvatar") || DEFAULT_AVATAR;
+  if (settingsAvatarPreview) {
+    settingsAvatarPreview.src = currentAvatar;
+  }
+  pendingAvatarData = null;
+
+  settingsModal.classList.add("open");
+  settingsModal.setAttribute("aria-hidden", "false");
+  document.body.style.overflow = "hidden";
+}
+
+function closeSettingsModal() {
+  if (!settingsModal) return;
+  settingsModal.classList.remove("open");
+  settingsModal.setAttribute("aria-hidden", "true");
+  document.body.style.overflow = "";
+}
+
+// เปิดเปลี่ยนรูป/โปรไฟล์ จาก My Profile แทน Settings
+menuProfileBtn?.addEventListener("click", (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  openSettingsModal();
+});
+
+
+settingsBackdrop?.addEventListener("click", closeSettingsModal);
+settingsClose?.addEventListener("click", closeSettingsModal);
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && settingsModal?.classList.contains("open")) {
+    closeSettingsModal();
+  }
+});
+
+settingsAvatarUpload?.addEventListener("click", () => {
+  const input = document.createElement("input");
+  input.type = "file";
+  input.accept = "image/*";
+  input.click();
+
+  input.addEventListener("change", (ev) => {
+    const file = ev.target.files && ev.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (r) => {
+      pendingAvatarData = r.target.result;
+      if (settingsAvatarPreview) {
+        settingsAvatarPreview.src = pendingAvatarData;
+      }
+    };
+    reader.readAsDataURL(file);
+  });
+});
+
+settingsAvatarReset?.addEventListener("click", () => {
+  pendingAvatarData = "RESET";
+  if (settingsAvatarPreview) {
+    settingsAvatarPreview.src = DEFAULT_AVATAR;
+  }
+});
+
+settingsSave?.addEventListener("click", () => {
+  if (pendingAvatarData === null) {
+    closeSettingsModal();
+    return;
+  }
+
+  if (pendingAvatarData === "RESET") {
+    localStorage.removeItem("profileAvatar");
+    document.querySelectorAll(".avatar-img, .menu-avatar")
+      .forEach(img => (img.src = DEFAULT_AVATAR));
+  } else {
+    localStorage.setItem("profileAvatar", pendingAvatarData);
+    document.querySelectorAll(".avatar-img, .menu-avatar")
+      .forEach(img => (img.src = pendingAvatarData));
+  }
+
+  alert("บันทึกการตั้งค่าเรียบร้อย!");
+  closeSettingsModal();
+});
+
+/* ---------- เปลี่ยนสถานะแบบ dropdown ใต้ชื่อ ---------- */
+
+const statusDotAvatar = document.querySelector(".avatar-btn .status-dot");
+const statusDotMenu   = document.getElementById("statusDotMenu");
+const statusTextEl    = document.getElementById("statusText");
+const statusRowBtn    = document.getElementById("statusRow");
+const statusListEl    = document.getElementById("statusList");
+
+const STATUS_CONFIG = {
+  online:  { key: "online",  label: "ออนไลน์",          className: "online"  },
+  away:    { key: "away",    label: "ไม่อยู่",           className: "away"    },
+  busy:    { key: "busy",    label: "ห้ามรบกวน",        className: "busy"    },
+  offline: { key: "offline", label: "ออฟไลน์ / ซ่อนตัว", className: "offline" }
+};
+
+function applyStatus(statusKey) {
+  const cfg = STATUS_CONFIG[statusKey] || STATUS_CONFIG.online;
+
+  Object.values(STATUS_CONFIG).forEach(s => {
+    statusDotAvatar?.classList.remove(s.className);
+    statusDotMenu?.classList.remove(s.className);
+  });
+
+  statusDotAvatar?.classList.add(cfg.className);
+  statusDotMenu?.classList.add(cfg.className);
+  if (statusTextEl) statusTextEl.textContent = cfg.label;
+
+  localStorage.setItem("userStatus", cfg.key);
+}
+
+const savedStatus = localStorage.getItem("userStatus") || "online";
+applyStatus(savedStatus);
+
+statusRowBtn?.addEventListener("click", (e) => {
+  e.stopPropagation();
+  if (!statusListEl) return;
+  statusListEl.classList.toggle("open");
+});
+
+statusListEl?.querySelectorAll(".status-option").forEach(btn => {
+  btn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    const key = btn.dataset.status;
+    applyStatus(key);
+    statusListEl.classList.remove("open");
+  });
+});
+
+statusDotAvatar?.addEventListener("click", (e) => {
+  e.stopPropagation();
+  if (!statusListEl) return;
+  statusListEl.classList.toggle("open");
+});
+
+
+document.addEventListener("click", (e) => {
+  if (!statusListEl) return;
+  const isInside = e.target.closest(".status-block");
+  if (!isInside) statusListEl.classList.remove("open");
+});
+
+/* ---------- Join button / การส่งชื่อไป chatpage ---------- */
+
+document.addEventListener("DOMContentLoaded", () => {
+  const savedName   = localStorage.getItem("username");
+  const googleName  = localStorage.getItem("googleName");
+  const chatName    = localStorage.getItem("chatUsername");
+  const userEmail   = localStorage.getItem("userEmail") ||
+                      localStorage.getItem("googleEmail");
+
+  if (usernameInput) {
+    if (savedName) {
+      usernameInput.value = savedName;
+    } else if (googleName) {
+      usernameInput.placeholder = googleName;
+    }
+  }
+
+  const displayName = chatName || savedName || googleName || "Guest";
+  if (menuNameEl) {
+    menuNameEl.textContent = displayName;
+  }
+
+  if (menuMailEl) {
+    menuMailEl.textContent = userEmail || "naomi@example.com";
+  }
+
+  if (joinBtn) {
+    joinBtn.addEventListener("click", () => {
+      const typedName = usernameInput ? usernameInput.value.trim() : "";
+      const finalName = typedName || googleName || "ผู้ใช้ไม่ระบุชื่อ";
+
+      localStorage.setItem("username", typedName || "");
+      localStorage.setItem("chatUsername", finalName);
+
+      if (menuNameEl) {
+        menuNameEl.textContent = finalName;
+      }
+
+      window.location.href = "chatpage.html";
+    });
+  }
+
+  // แสดง Avatar ตามของที่ใส่ไว้ล่าสุด
+  renderAvatar();
+
+  // เผื่อ safe อีกชั้น: อัปเดตจำนวนคนออนไลน์ตอน DOM พร้อม
+  updateOnlineCount();
 });

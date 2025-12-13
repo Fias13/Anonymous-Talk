@@ -1,3 +1,4 @@
+
 /* ---------- รายชื่อ / Friends Tab ---------- */
 
 // ผู้ใช้ทั้งหมด (หาเพื่อนใหม่)
@@ -193,7 +194,9 @@ function renderUsers() {
 tabOffline?.addEventListener("click", setActiveTabFriends);
 
 // เริ่มต้นที่แท็บเพื่อน
-setActiveTabFriends();
+if (localStorage.getItem("user")) {
+  setActiveTabFriends();
+}
 
 
 

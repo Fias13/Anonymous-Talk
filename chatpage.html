@@ -16,11 +16,148 @@
 
     <h1>CHAT ROOM</h1>
 
-    <div class="header-right">
-      <button class="icon-btn right" id="create-room-btn">Create Room</button>
-    </div>
   </header>
+  <div class="top-right">
+        <!-- Coin -->
+        <button class="icon-btn coin" id="coinBtn" title="Coins">
+          <span class="coin-icon" aria-hidden="true"></span>
+          <span class="coin-count" id="coinCount">0</span>
+        </button>
 
+        <!-- Notifications -->
+      <div class="notif-wrap">
+        <button class="icon-btn bell" id="bellBtn" title="Notifications" aria-haspopup="true" aria-expanded="false">
+          <span class="bell-icon" aria-hidden="true"></span>
+          <span class="badge" id="notifBadge" hidden>3</span>
+        </button>
+
+        <!-- Notification dropdown -->
+        <div class="notif-dropdown" id="notifDropdown" role="dialog" aria-hidden="true" aria-label="Notifications">
+          <div class="notif-header">
+            <strong>Notifications</strong>
+            <button class="notif-clear" id="notifClear">Mark all read</button>
+          </div>
+
+          <div class="notif-list" id="notifList">
+            <div class="notif-empty" id="notifEmpty">ไม่มีการแจ้งเตือน</div>
+          </div>
+
+          <div class="notif-footer">
+            <button id="notifViewAll" class="notif-viewall">Delete all</button>
+          </div>
+        </div>
+      </div>
+
+        <!-- Profile -->
+        <div class="profile-wrap" id="profileWrap">
+          <button class="avatar-btn" id="avatarBtn" title="Account">
+            <img src="./assets/images/default-profile.png" alt="Profile" class="avatar-img" />
+            <span class="status-dot online"></span>
+            <span class="avatar-ring"></span>
+          </button>
+
+          <!-- Dropdown Menu -->
+          <div class="menu" id="profileMenu" role="menu">
+            <div class="menu-header">
+              <img class="menu-avatar" src="./assets/images/default-profile.png" alt="" />
+              <div class="menu-identity">
+                <div class="menu-name" id="menuName">Naomi</div>
+                <div class="menu-mail" id="menuMail">naomi@example.com</div>
+              </div>
+            </div>
+
+            <!-- 🔽 ส่วนเลือกสถานะใต้ชื่อ -->
+            <div class="status-block">
+              <!-- แถวแสดงสถานะปัจจุบัน -->
+              <button class="status-row" id="statusRow" type="button">
+                <span class="status-dot online" id="statusDotMenu"></span>
+                <span class="status-text" id="statusText">ออนไลน์</span>
+              </button>
+
+              <!-- 🔻 dropdown ที่จะกางลงมา -->
+              <div class="status-list" id="statusList">
+                <button class="status-option" data-status="online">
+                  <span class="status-dot-mini online"></span>
+                  <div class="status-option-text">
+                    <div class="status-option-label">ออนไลน์</div>
+                    <div class="status-option-desc">คุณกำลังใช้งานอยู่</div>
+                  </div>
+                </button>
+
+                <button class="status-option" data-status="away">
+                  <span class="status-dot-mini away"></span>
+                  <div class="status-option-text">
+                    <div class="status-option-label">ไม่อยู่</div>
+                    <div class="status-option-desc">พักชั่วคราว</div>
+                  </div>
+                </button>
+
+                <button class="status-option" data-status="busy">
+                  <span class="status-dot-mini busy"></span>
+                  <div class="status-option-text">
+                    <div class="status-option-label">ห้ามรบกวน</div>
+                    <div class="status-option-desc">ไม่ต้องการรับการแจ้งเตือน</div>
+                  </div>
+                </button>
+
+                <button class="status-option" data-status="offline">
+                  <span class="status-dot-mini offline"></span>
+                  <div class="status-option-text">
+                    <div class="status-option-label">ออฟไลน์ / ซ่อนตัว</div>
+                    <div class="status-option-desc">แสดงว่าออฟไลน์อยู่</div>
+                  </div>
+                </button>
+              </div>
+            </div>
+
+            <hr />
+            <button class="menu-item" id="menuProfile" role="menuitem">My Profile</button>
+            <button class="menu-item" id="menuSettings" role="menuitem">Settings</button>
+
+            <!-- ===== Settings Modal ===== -->
+            <div id="settingsModal" class="modal" aria-hidden="true" role="dialog" aria-modal="true">
+              <div class="modal-backdrop" id="settingsBackdrop"></div>
+
+              <div class="modal-card settings-card" role="document">
+                <button class="modal-close" id="settingsClose" aria-label="Close">×</button>
+                <h2 class="modal-title">My Profile</h2>
+
+                <div class="settings-content">
+                  <div class="settings-section">
+                    <h3 class="settings-label">รูปโปรไฟล์</h3>
+                    <div class="settings-avatar-row">
+                      <img
+                        id="settingsAvatarPreview"
+                        class="settings-avatar"
+                        src="./assets/images/default-profile.png"
+                        alt="Profile preview"
+                      />
+                      <div class="settings-avatar-actions">
+                        <button type="button" class="settings-btn" id="settingsAvatarUpload">
+                          เลือกรูป…
+                        </button>
+                        <button type="button" class="settings-btn ghost" id="settingsAvatarReset">
+                          ใช้รูปเริ่มต้น
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="settings-footer">
+                  <button type="button" class="settings-btn primary" id="settingsSave">
+                    Save
+                  </button>
+                </div>
+              </div>
+            </div>
+            <!-- ===== /Settings Modal ===== -->
+
+            <hr />
+            <button class="menu-item danger" id="logoutBtn" role="menuitem">Logout</button>
+          </div>
+        </div>
+      </div>
   <main id="room-container">
     <div class="no-room">💤 ยังไม่มีห้องแชทในขณะนี้</div>
   </main>
@@ -58,6 +195,9 @@
       </div>
     </div>
   </div>
+  <button class="floating-create-btn" id="create-room-btn">
+    Create Room
+  </button>
 
   <!-- เปลี่ยนเป็น type="module" เพื่อใช้ Firebase -->
   <script type="module" src="chatpage.js"></script>

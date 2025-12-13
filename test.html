@@ -166,7 +166,24 @@ body {
 .chat-messages p.own-message {
   background: #d4edda;
   text-align: right;
+
+  display: inline-block;   /* ⭐ สำคัญ */
+  width: fit-content;      /* ให้กว้างตามข้อความ */
+  max-width: 85%;          /* กันไม่ให้ยาวเกินกล่อง */
+  padding: 8px 12px;
+  border-radius: 12px;
 }
+
+.chat-messages {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.chat-messages p.own-message {
+  align-self: flex-end;
+}
+
  
 .chat-messages p.own-message .username {
   cursor: default;

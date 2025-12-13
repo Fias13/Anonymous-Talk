@@ -25,13 +25,56 @@ body::before {
   min-height: 100vh;
   display: flex; flex-direction: column;
   justify-content: space-between; align-items: center;
-  padding: 20px;
+  padding: 0;
 }
 
 /* ---------- Header ---------- */
-.header {
-  position: relative; width: 100%; max-width: 2000px;
-  margin-bottom: 30px; text-align: center; z-index: 1;
+header {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 10px 25px;
+  border-bottom: 3px solid #333;
+  background: rgba(255, 255, 255, 0.9);
+  width: 100%;
+  max-width: 100%;
+  margin: 0 0 30px 0;
+  text-align: center;
+  z-index: 1;
+  min-height: 80px;
+}
+
+header h1 {
+  font-size: 40px;
+  font-weight: bold;
+  margin: 0;
+  color: #333;
+  transition: all 0.3s ease;
+}
+
+header h1:hover {
+  color: #000;
+  transform: scale(1.1);
+  text-shadow: 2px 2px 10px rgb(255,255,255);
+  cursor: default;
+}
+
+.header-left {
+  position: absolute;
+  left: 25px;
+  top: 55%;
+  transform: translateY(-50%);
+}
+
+.header-right {
+  position: absolute;
+  top: 50%;
+  right: 20px;
+  transform: translateY(-50%);
+  display: flex;
+  gap: 20px;
+  align-items: center;
 }
 .title { 
   font-size: 2.5rem; 
@@ -302,6 +345,7 @@ body::before {
   width:100%;
   max-width:1200px;
   margin-top:30px;
+  padding: 0 20px;
 }
 .left-panel{
   display:flex;
@@ -309,6 +353,7 @@ body::before {
   gap:15px;
   width:22%;
   margin-top: -50px;
+  margin-left: -80px;
 }
 
 /* Avatar กลางจอ */
@@ -384,15 +429,25 @@ body::before {
   pointer-events:none;
 }
 
-.greeting{ font-size:1.2rem; }
-.username-input{
-  margin-left:10px; border:none; border-bottom:1px solid #000;
-  background:transparent; outline:none; font-size:1rem;
+.greeting {
+  font-size: 1.4rem;
 }
-.costom-btn-icon{
-  width:120px; height:60px;
-  background:url("./assets/images/costom.png") no-repeat center/contain;
-  border:none; cursor:pointer;
+
+.username-input {
+  margin-left: 10px;
+  border: none;
+  border-bottom: 2px solid #000;
+  background: transparent;
+  outline: none;
+  font-size: 1.1rem;
+  width: 200px;
+}
+.costom-btn-icon {
+  width: 140px;
+  height: 70px;
+  background: url("./assets/images/costom.png") no-repeat center/contain;
+  border: none;
+  cursor: pointer;
   transition: transform 0.3s ease, filter 0.3s ease;
 }
 
@@ -459,10 +514,12 @@ body::before {
 .custom-save:active{ transform: translateY(2px); box-shadow: 0 1px 0 #00000020; }
 
 /* ===== Shop ===== */
-.shop-btn-icon{
-  width:120px; height:60px;
-  background:url("./assets/images/shop.png") no-repeat center/contain;
-  border:none; cursor:pointer;
+.shop-btn-icon {
+  width: 140px;
+  height: 70px;
+  background: url("./assets/images/shop.png") no-repeat center/contain;
+  border: none;
+  cursor: pointer;
   transition: transform 0.3s ease, filter 0.3s ease;
 }
 
@@ -524,10 +581,12 @@ body::before {
 .shop-claim:active{ transform: translateY(2px); box-shadow: 0 1px 0 #00000020; }
 
 /* ===== Daily Rewards ===== */
-.daily-btn-icon{
-  width:120px; height:60px;
-  background:url("./assets/images/daily.png")  no-repeat center/contain;
-  border:none; cursor:pointer;
+.daily-btn-icon {
+  width: 140px;
+  height: 70px;
+  background: url("./assets/images/daily.png") no-repeat center/contain;
+  border: none;
+  cursor: pointer;
   transition: transform 0.3s ease, filter 0.3s ease;
 }
 
@@ -644,8 +703,9 @@ body::before {
   display:flex;
   flex-direction:column;
   align-items:stretch;
-  position: relative;  /* ⭐ เพิ่ม */
+  position: relative;
   top: -100px;
+  margin-right: -100px;
 }
 .friends-card{
   margin-top: 6px;
@@ -803,7 +863,7 @@ body::before {
 }
 
 .join-btn-icon{
-  width:120px; height:110px;
+  width:140px; height:110px;
   background:url("./assets/images/join.png") no-repeat center/contain;
   border:none; cursor:pointer; margin-top:15px;
   align-self:flex-start; margin-left:90px;
@@ -930,7 +990,10 @@ body::before {
 .status-option-text {
   display: flex;
   flex-direction: column;
+  align-items: flex-start;   /* ⭐ สำคัญ */
+  text-align: left;          /* ⭐ สำคัญ */
 }
+
 .status-option-label {
   font-size: 0.9rem;
   font-weight: 700;
