@@ -1332,7 +1332,8 @@ const DAILY_STATE_KEY = "daily_seq_state";
 
 let dailyState = {
   claimed: Array(DAILY_REWARD_STEPS.length).fill(false),
-  lastClaimDate: null
+  lastClaimDate: null,
+  cycleCompletedAt: null   // ⭐ เพิ่มตัวนี้
 };
 
 function getTodayStr() {
@@ -1345,33 +1346,32 @@ function saveDailyState() {
 
 function loadDailyState() {
   const today = getTodayStr();
+
   try {
     const raw = localStorage.getItem(DAILY_STATE_KEY);
     if (raw) {
       const parsed = JSON.parse(raw);
-      if (parsed &&
-          Array.isArray(parsed.claimed) &&
-          parsed.claimed.length === DAILY_REWARD_STEPS.length) {
-        dailyState.claimed = parsed.claimed.map(Boolean);
+      if (parsed) {
+        dailyState.claimed = parsed.claimed || dailyState.claimed;
         dailyState.lastClaimDate = parsed.lastClaimDate || null;
+        dailyState.cycleCompletedAt = parsed.cycleCompletedAt || null;
       }
     }
-  } catch (e) {
-    dailyState = {
-      claimed: Array(DAILY_REWARD_STEPS.length).fill(false),
-      lastClaimDate: null
-    };
-  }
+  } catch {}
 
-  // ถ้ารับครบทุกวันแล้วและเป็นวันใหม่ ให้รีเซ็ตเป็นรอบใหม่
-  const allClaimed = dailyState.claimed.every(v => v);
-  if (allClaimed && dailyState.lastClaimDate !== today) {
+  // ✅ ถ้ารอบก่อน "ครบทุกวันแล้ว" และเป็นวันใหม่ → รีเซ็ตรอบใหม่
+  if (
+    dailyState.cycleCompletedAt &&
+    dailyState.cycleCompletedAt !== today
+  ) {
     dailyState.claimed = Array(DAILY_REWARD_STEPS.length).fill(false);
     dailyState.lastClaimDate = null;
+    dailyState.cycleCompletedAt = null;
   }
 
   saveDailyState();
 }
+
 
 function getNextRewardIndex() {
   const idx = dailyState.claimed.findIndex(v => !v);
@@ -1491,6 +1491,10 @@ dailyClaimBtn?.addEventListener("click", () => {
   // อัปเดตสถานะ daily
   dailyState.claimed[nextIndex] = true;
   dailyState.lastClaimDate = getTodayStr();
+  // ⭐ ถ้ารับครบทุกวันแล้ว → บันทึกวันจบรอบ
+  if (dailyState.claimed.every(v => v)) {
+    dailyState.cycleCompletedAt = getTodayStr();
+  }
   saveDailyState();
 
   showAlert(`รับ Day ${step.day}: +${step.amount} เหรียญเรียบร้อย! ✨`);
