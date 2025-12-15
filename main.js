@@ -1010,7 +1010,7 @@ const SHOP_ITEMS = {
       name: "Flag",      
       price: 30, 
       img: "./assets/shop/joygame.png",
-      avatarImg: "./assets/avatar/avatar_burger.png",
+      avatarImg: "./assets/avatar/avatar_joygame.png",
       fullBody: true  
     }
   ],
@@ -1359,11 +1359,12 @@ function loadDailyState() {
     }
   } catch {}
 
-  // ✅ ถ้ารอบก่อน "ครบทุกวันแล้ว" และเป็นวันใหม่ → รีเซ็ตรอบใหม่
-  if (
-    dailyState.cycleCompletedAt &&
-    dailyState.cycleCompletedAt !== today
-  ) {
+  // ✅ ตรวจสอบว่ารับครบทุกวันแล้วหรือยัง
+  const allClaimed = dailyState.claimed.every(v => v);
+  
+  // ✅ ถ้ารับครบแล้ว และเป็นวันใหม่ → รีเซ็ตทันที
+  if (allClaimed && dailyState.cycleCompletedAt !== today) {
+    console.log("🔄 Resetting daily rewards cycle - all claimed and new day");
     dailyState.claimed = Array(DAILY_REWARD_STEPS.length).fill(false);
     dailyState.lastClaimDate = null;
     dailyState.cycleCompletedAt = null;
@@ -1371,7 +1372,6 @@ function loadDailyState() {
 
   saveDailyState();
 }
-
 
 function getNextRewardIndex() {
   const idx = dailyState.claimed.findIndex(v => !v);

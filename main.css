@@ -458,7 +458,7 @@ header h1:hover {
 
 /* ===== Modals base ===== */
 .modal{
-  position: fixed; inset: 0; display: none; z-index: 1000;
+  position: fixed; inset: 0; display: none; z-index:1000;
 }
 .modal.open{ display: block; }
 .modal-backdrop{
