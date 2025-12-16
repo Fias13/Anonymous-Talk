@@ -1796,7 +1796,7 @@ function updateCharacters(count) {
       { id: "other-none",  img: "./assets/avatar/empty.png" },
       { id: "other-water", avatarImg: "./assets/avatar/avatar_gun.png",    fullBody: true },
       { id: "other-bag",   avatarImg: "./assets/avatar/avatar_burger.png", fullBody: true },
-      { id: "other-flag",  avatarImg: "./assets/avatar/avatar_burger.png", fullBody: true }
+      { id: "other-flag",  avatarImg: "./assets/avatar/avatar_joygame.png", fullBody: true }
     ]
   };
 
@@ -1818,6 +1818,7 @@ function updateCharacters(count) {
 
     const hatAsset  = eq.hat  ? AVATAR_ASSET_INDEX[eq.hat]  : null;
     const skinAsset = eq.skin ? AVATAR_ASSET_INDEX[eq.skin] : null;
+    const otherAsset = eq.other ? AVATAR_ASSET_INDEX[eq.other] : null;
 
     // ถ้าหมวกเป็น full body ใช้หมวก
     if (hatAsset?.fullBody) {
@@ -1826,6 +1827,9 @@ function updateCharacters(count) {
     // ถ้า skin เป็น full body ใช้ skin
     if (skinAsset?.fullBody) {
       return skinAsset.img || fallback;
+    }
+    if (otherAsset?.fullBody) {
+      return otherAsset.img || fallback;
     }
     // ปกติใช้รูป skin
     return skinAsset?.img || fallback;
