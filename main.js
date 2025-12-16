@@ -225,7 +225,6 @@ function renderUsers() {
         <img src="./assets/images/default-profile.png" alt="${u.name}" class="user-avatar" />
         <div class="user-info">
           <span class="user-name">${u.name}</span>
-          <span class="user-status ${status}">${label}</span>
         </div>
       </div>
       ${rightPartHtml}
