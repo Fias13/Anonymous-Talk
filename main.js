@@ -953,7 +953,7 @@ const SHOP_ITEMS = {
     {
       id: "hat-beret",
       name: "Straw Hat",
-      price: 20,
+      price: 0,
       img: "./assets/shop/hat3.png",
       avatarImg: "./assets/avatar/avatar_hat3.png",
       fullBody: true
